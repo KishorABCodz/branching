@@ -17,10 +17,18 @@ jobs:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
     steps:
-    - uses: actions/checkout@v4
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
-  
-    - name: Print checked out branch
-      run: |
-        git branch --show-current
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Create new file and add content
+        run: |
+          echo "hai this is the current branch: ${{ github.event.pull_request.head.ref }}" > new_file.txt
+
+      - name: Add, commit, and push
+        run: |
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "actions@github.com"
+          git add new_file.txt
+          git commit -m "Added new file with branch information"
+          git push origin ${{ github.event.pull_request.head.ref }}
