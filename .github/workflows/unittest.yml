@@ -12,23 +12,30 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 jobs:
-  build:
+  create_file_and_push:
     runs-on: ubuntu-latest
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Create new file and add content
         run: |
           echo "hai this is the current branch: ${{ github.event.pull_request.head.ref }}" > new_file.txt
 
+      - name: Create new branch
+        run: |
+          git checkout -b update-from-actions
+
       - name: Add, commit, and push
         run: |
-          git config --local user.name "kishor"
-          git config --local user.email "kishorab023@gmail.com"
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "actions@github.com"
           git add new_file.txt
           git commit -m "Added new file with branch information"
-          git push origin ${{ github.event.pull_request.head.ref }}
+          git push origin update-from-actions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Create a pull request step (optional)
