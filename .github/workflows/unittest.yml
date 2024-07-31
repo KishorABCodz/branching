@@ -30,8 +30,8 @@ jobs:
 
       - name: Add, commit, and push
         run: |
-          git config --local user.name "GitHub Actions"
-          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub"
+          git config --local user.email "kishorab023@gmail.com"
           git add new_file.txt
           git commit -m "Added new file with branch information"
           git push origin update-from-actions
