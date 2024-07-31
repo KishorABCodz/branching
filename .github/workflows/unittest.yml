@@ -12,7 +12,7 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 jobs:
-  create_file_and_push:
+  create_pull_request:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,22 +20,45 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Create new file and add content
-        run: |
-          echo "hai this is the current branch: ${{ github.event.pull_request.head.ref }}" > new_file.txt
-
       - name: Create new branch
-        run: |
-          git checkout -b update-from-actions
+        run: git checkout -b feature-branch
 
-      - name: Add, commit, and push
+      - name: Create file and add content
+        run: echo "hai this is the current branch:${{ github.event.pull_request.head.ref }}" > new_file.txt
+
+      - name: Commit and push
         run: |
-          git config --local user.name "GitHub Actions"
-          git config --local user.email "actions@github.com"
           git add new_file.txt
           git commit -m "Added new file with branch information"
-          git push origin update-from-actions
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git push origin feature-branch
 
-      # Create a pull request step (optional)
+      - name: Create pull request
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const core = require('@actions/core');
+            const github = require('@actions/github');
+
+            async function run() {
+              try {
+                const token = core.getInput('GITGUBSECRET');
+                const   
+                  octokit = new github.Octokit({ auth: token });
+
+                const { data: pull_request } = await octokit.pulls.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  head: 'feature-branch',
+                  base: context.payload.pull_request.base.ref,
+                  title: 'New feature from action',
+                  body: 'This pull request was created by a GitHub Action'
+                });
+
+                core.setOutput('pull_request_number', pull_request.number);
+              } catch (error) {
+                core.setFailed(error.message);
+              }
+            }
+
+            run();
+          GITHUB_TOKEN: ${{ secrets.GITGUBSECRET }}
